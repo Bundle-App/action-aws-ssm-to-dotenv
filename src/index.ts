@@ -18,19 +18,18 @@ async function run() {
     try {
       const {Parameters} = await ssm
         .getParametersByPath({
+          WithDecryption: true,
           Path: ssmPath,
           Recursive: true,
         })
         .promise()
 
       core.debug(`parameters length: ${Parameters.length}`)
-      core.debug(JSON.stringify(Parameters.map(p => p.Name)))
 
-      const envs = Parameters
-        .map<Parameter>(p => ({
-          ...p,
-          Name: p.Name.split('/').pop(),
-        }))
+      const envs = Parameters.map<Parameter>(p => ({
+        Value: p.Value,
+        Name: p.Name.split('/').pop(),
+      }))
         .map<string>(formatter(format)(prefix))
       if (envs.length > 0) {
         envs.push('\n')
